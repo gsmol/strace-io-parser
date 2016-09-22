@@ -16,10 +16,22 @@ WRITE_REGEX = re.compile(
     'write\((?P<descriptor>[0-9]+), ".+\) = (?P<amount>[0-9]+)')
 READ_REGEX = re.compile(
     'read\((?P<descriptor>[0-9]+), ".+\) = (?P<amount>[0-9]+)')
+PID_REGEX = re.compile(
+    "^(?P<pid>[0-9]+)")
 
 
 def main(logfile):
     open_desc = {}
+#    open_desc = {
+#        'pid1': {
+#            'inode1': 'file',
+#            'inode2': 'file2',
+#        }
+#        'pid2': {
+#            'inode3': 'fil3',
+#            'inode4': 'file4',
+#        }
+#    }
     files = {
         'unknown': {
             'writes': 0,
@@ -33,39 +45,54 @@ def main(logfile):
             close_search = CLOSE_REGEX.search(line)
             read_search = READ_REGEX.search(line)
             write_search = WRITE_REGEX.search(line)
+            pid_search = PID_REGEX.search(line)
 
             if not (open_search or close_search or read_search or write_search):
                 continue
             if open_search:
-                file = open_search.group(1)
+                pid = pid_search.group(1)
                 inode = open_search.group(2)
+                file = open_search.group(1)
 
-                open_desc[inode] = file
+                if pid in open_desc:
+                    open_desc[pid][inode] = file
+                else:
+                    open_desc[pid] = {inode: file}
                 if file in files:
                     continue
                 else:
                     files[file] = {'writes': 0, 'reads': 0}
 
             elif close_search:
+                pid = pid_search.group(1)
                 inode = close_search.group(1)
-                if inode in open_desc:
-                    del open_desc[inode]
+                if inode in open_desc[pid]:
+                    del open_desc[pid][inode]
 
             elif read_search:
+                pid = pid_search.group(1)
                 inode = read_search.group(1)
                 amount = int(read_search.group(2))
-                if inode in open_desc:
-                    file = open_desc[inode]
-                    files[file]['reads'] = files[file]['reads'] + amount
+                if pid in open_desc:
+                    if inode in open_desc[pid]:
+                        file = open_desc[pid][inode]
+                        files[file]['reads'] = files[file]['reads'] + amount
+                    else:
+                        files['unknown']['reads'] = files['unknown']['reads'] + amount
+
                 else:
                     files['unknown']['reads'] = files['unknown']['reads'] + amount
 
             elif write_search:
+                pid = pid_search.group(1)
                 inode = write_search.group(1)
                 amount = int(write_search.group(2))
-                if inode in open_desc:
-                    file = open_desc[inode]
-                    files[file]['writes'] = files[file]['writes'] + amount
+                if pid in open_desc:
+                    if inode in open_desc[pid]:
+                        file = open_desc[pid][inode]
+                        files[file]['writes'] = files[file]['writes'] + amount
+                    else:
+                        files['unknown']['writes'] = files['unknown']['writes'] + amount
                 else:
                     files['unknown']['writes'] = files['unknown']['writes'] + amount
 
