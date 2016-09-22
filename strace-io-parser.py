@@ -5,16 +5,8 @@ import os
 import re
 import datetime
 
-from collections import defaultdict
-
 from optparse import OptionParser
 
-# DEBUG = False
-# DEBUG = True
-# LOG = "strace.log"
-
-# TOP_NUMBER_OPERATIONS = 10
-# TOP_NUMBER_VOLUME = 3
 
 OPEN_REGEX = re.compile(
     'open\("(?P<filepath>[^"]+)", [^\)]*\) = (?P<descriptor>[0-9]+)')
@@ -24,21 +16,6 @@ WRITE_REGEX = re.compile(
     'write\((?P<descriptor>[0-9]+), ".+\) = (?P<amount>[0-9]+)')
 READ_REGEX = re.compile(
     'read\((?P<descriptor>[0-9]+), ".+\) = (?P<amount>[0-9]+)')
-# TIME_REGEX = re.compile("([0-9]{2}):([0-9]{2}):([0-9]{2})\.([0-9]+)")
-# PID_REGEX = re.compile("^(?P<pid>[0-9]+)")
-# DUP_REGEX = re.compile(
-# "dup[23]?\((?P<old_descriptor>[0-9]+), [0-9]+\)[\s]+=(?P<descriptor>[0-9]+)")
-
-
-# def parse_time(line):
-#    time_data = TIME_REGEX.search(line)
-#    return datetime.time(*map(int, time_data.groups()))
-
-
-# def log(msg):
-#    if not DEBUG:
-#        return
-#    print msg
 
 
 def main(logfile):
@@ -54,10 +31,10 @@ def main(logfile):
         for line in fp:
             open_search = OPEN_REGEX.search(line)
             close_search = CLOSE_REGEX.search(line)
-            write_search = WRITE_REGEX.search(line)
             read_search = READ_REGEX.search(line)
+            write_search = WRITE_REGEX.search(line)
 
-            if not (write_search or open_search or close_search or read_search):
+            if not (open_search or close_search or read_search or write_search):
                 continue
             if open_search:
                 file = open_search.group(1)
