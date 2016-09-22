@@ -85,8 +85,8 @@ def main(logfile):
         if re.compile(r'pg_xlog').search(file) is not None:
             xlog_write = xlog_write + files[file]['writes']
 
-    print 'unknown reads: {0} MB, writes {1} MB'.format(
-        unknown['reads'] / 1048576.0, unknown['writes'] / 1048576.0)
+    print 'unknown read: {0} MB'.format(unknown['reads'] / 1048576.0)
+    print 'unknown write: {0} MB'.format(unknown['writes'] / 1048576.0)
     print 'total read: {0} MB'.format(total_read / 1048576.0)
     print 'xlog write: {0} MB'.format(xlog_write / 1048576.0)
     print 'total write: {0} MB'.format(total_write / 1048576.0)
