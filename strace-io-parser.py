@@ -66,8 +66,9 @@ def main(logfile):
             elif close_search:
                 pid = pid_search.group(1)
                 inode = close_search.group(1)
-                if inode in open_desc[pid]:
-                    del open_desc[pid][inode]
+                if pid in open_desc:
+                    if inode in open_desc[pid]:
+                        del open_desc[pid][inode]
 
             elif read_search:
                 pid = pid_search.group(1)
